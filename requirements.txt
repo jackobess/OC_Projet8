@@ -1,0 +1,17 @@
+# Dépendances projet OC_Projet8
+fastapi
+uvicorn
+joblib
+scikit-learn
+lightgbm
+pandas
+numpy
+pytest
+pytest-cov
+psycopg2-binary
+sqlalchemy
+python-dotenv
+httpx2
+evidently
+nannyml
+streamlit
