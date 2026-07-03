@@ -7,7 +7,7 @@ import pandas as pd
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main_p5 import app
 from app.database import get_db
 
 
