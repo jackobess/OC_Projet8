@@ -138,3 +138,19 @@ PYTHONPATH=. CI=true pytest tests/ -v --cov=app --cov-report=html
 - Branches : `feature/xxx`, `fix/xxx`, `test/xxx`
 - Commits : `feat:`, `fix:`, `docs:`, `ci:`, `chore:`
 - Versions : `app/__version__.py` + tags Git
+
+---
+
+## 🚀 Intégration & Déploiement Continus (CI/CD)
+
+Ce projet utilise **GitHub Actions** pour valider le code et automatiser le déploiement sur Hugging Face Spaces (Docker). 
+
+Le pipeline se déclenche automatiquement à chaque `git push`. Vous pouvez contrôler finement son comportement depuis votre terminal grâce aux balises de commit :
+
+| Commande de Commit | Action du Pipeline | Environnement Cible |
+| :--- | :--- | :--- |
+| `git commit -m "mon message"` | **La totale** : Exécute les 7 tests pytest ➡️ Si OK, build l'image et déploie. | GitHub + Hugging Face |
+| `git commit -m "mon message [skip deploy]"` | **Tests uniquement** : Valide le code sans mettre à jour l'API en production. | GitHub Actions uniquement |
+| `git commit -m "mon message [skip ci]"` | **Ignorer le pipeline** : Pour les modifications mineures (documentation, typos). | Aucun (Pipeline bypassé) |
+
+_Note : Le déploiement s'appuie sur le secret de dépôt `HF_TOKEN` configuré sur GitHub._
