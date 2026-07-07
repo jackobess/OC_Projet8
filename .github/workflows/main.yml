@@ -33,14 +33,14 @@ jobs:
   # ÉTAPES 2 & 3 : Build Docker automatique et Déploiement HF
   # ----------------------------------------------------
   deploy-to-huggingface:
-    needs: run-tests  # CRUCIAL : Ne se lance QUE si les 7 tests passent !
+    needs: run-tests  # Ne se lance QUE si les tests passent !
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip deploy]')"
     steps:
       - name: Code Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Nécessaire pour que Git puisse pousser l'historique complet
+          lfs: true
 
       - name: Push vers Hugging Face Spaces
         env:
@@ -50,13 +50,8 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
-          # 2. CONFIGURER GIT LFS (La sécurité pour ton .joblib)
+          # 2. Activation de LFS sur la machine GitHub
           git lfs install
-          git lfs track "models/*.joblib"
-          git add .gitattributes
-
-          # On commit le fichier d'attributs s'il a bougé, sans bloquer si rien n'a changé
-          git commit -m "chore: update git lfs attributes [skip ci]" || true
           
-          # 3. Push forcé pour mettre à jour le Space (qui va lire le Dockerfile et build l'image)
+          # 3. Push direct vers Hugging Face (le commit contient déjà le pointeur LFS)
           git push --force https://jackobess:$HF_TOKEN@huggingface.co/spaces/jackobess/OC_Projet8 HEAD:refs/heads/main
