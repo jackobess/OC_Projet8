@@ -49,9 +49,14 @@ jobs:
           # 1. Configuration de l'identité Git pour le serveur GitHub
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          
-          # 2. Ajout du repo distant Hugging Face en utilisant ton pseudo 'jackobess'
-          git remote add hf https://jackobess:$HF_TOKEN@huggingface.co/spaces/jackobess/OC_Projet8
+
+          # 2. CONFIGURER GIT LFS (La sécurité pour ton .joblib)
+          git lfs install
+          git lfs track "models/*.joblib"
+          git add .gitattributes
+
+          # On commit le fichier d'attributs s'il a bougé, sans bloquer si rien n'a changé
+          git commit -m "chore: update git lfs attributes [skip ci]" || true
           
           # 3. Push forcé pour mettre à jour le Space (qui va lire le Dockerfile et build l'image)
-          git push --force hf HEAD:refs/heads/main
+          git push --force https://jackobess:$HF_TOKEN@huggingface.co/spaces/jackobess/OC_Projet8 HEAD:refs/heads/main
