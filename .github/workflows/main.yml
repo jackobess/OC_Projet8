@@ -13,7 +13,8 @@ jobs:
     steps:
       - name: Code Checkout
         uses: actions/checkout@v4
-
+        with:
+          lfs: true
       - name: Configuration de Python
         uses: actions/setup-python@v5
         with:
