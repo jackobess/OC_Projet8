@@ -27,7 +27,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Lancement de la suite de tests (pytest)
-        run: |
+         env:
+          PYTHONPATH: .
+          DATABASE_URL: "popo"
+          CI: "true"
+         run: |
           pytest -v
 
   # ----------------------------------------------------
