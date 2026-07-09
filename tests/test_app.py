@@ -1,6 +1,18 @@
 import pytest
+from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 from app.main import app
+from app.database import get_db
+
+def override_get_db():
+    """Mock de la session BDD — ne se connecte pas à Postgres."""
+    db = MagicMock()
+    db.add = MagicMock()
+    db.commit = MagicMock()
+    db.refresh = MagicMock()
+    yield db
+
+app.dependency_overrides[get_db] = override_get_db
 
 # Initialisation du client de test FastAPI
 client = TestClient(app)
