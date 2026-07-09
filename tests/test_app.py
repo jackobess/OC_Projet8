@@ -20,7 +20,7 @@ def test_predict_accord():
     payload = sample_res.json()
 
     # 2. Envoi au modèle pour prédiction
-    response = client.post("/predict2", json=payload)
+    response = client.post("/predict", json=payload)
     assert response.status_code == 200
     
     data = response.json()
@@ -35,7 +35,7 @@ def test_predict_refus():
     payload = sample_res.json()
 
     # 2. Envoi au modèle
-    response = client.post("/predict2", json=payload)
+    response = client.post("/predict", json=payload)
     assert response.status_code == 200
     
     data = response.json()
@@ -45,7 +45,7 @@ def test_predict_refus():
 def test_predict_invalid_request():
     """Vérifie qu'un payload vide ou mal formé renvoie une erreur 422 (FastAPI/Pydantic validation)."""
     # Envoi d'un dictionnaire vide
-    response = client.post("/predict2", json={})
+    response = client.post("/predict", json={})
     assert response.status_code == 422
 
 
@@ -57,7 +57,7 @@ def test_predict_with_extra_columns():
     # Ajout d'une colonne sauvage non attendue par le modèle ou Pydantic
     payload["COLONNE_INUTILE_TEST"] = 999.9
 
-    response = client.post("/predict2", json=payload)
+    response = client.post("/predict", json=payload)
     assert response.status_code == 200
     assert "prediction" in response.json()
 
@@ -73,7 +73,7 @@ def test_predict_missing_features_rejected():
         del p_missing["features"]["AMT_CREDIT"]
 
     # 3. Envoi et assertion
-    response = client.post("/predict2", json=p_missing)
+    response = client.post("/predict", json=p_missing)
     assert response.status_code == 422
     assert "Features manquantes" in response.json()["detail"]
     
@@ -88,7 +88,7 @@ def test_predict_business_rules_rejected():
     # Règle 1 : Test type String (Bloqué par notre API -> 400)
     p_bad_type = {"features": features_internes.copy()}
     p_bad_type["features"]["AMT_CREDIT"] = "string_interdite"
-    response = client.post("/predict2", json=p_bad_type)
+    response = client.post("/predict", json=p_bad_type)
     assert response.status_code == 400 
     assert "must be numeric or boolean" in response.json()["detail"]
 
@@ -96,7 +96,7 @@ def test_predict_business_rules_rejected():
     p_bad_flag = {"features": features_internes.copy()}
     flag_col = [k for k in features_internes.keys() if k.startswith("FLAG_")][0]
     p_bad_flag["features"][flag_col] = 99
-    response = client.post("/predict2", json=p_bad_flag)
+    response = client.post("/predict", json=p_bad_flag)
     assert response.status_code == 400
     assert "must be 0 or 1" in response.json()["detail"]
 
@@ -104,7 +104,7 @@ def test_predict_business_rules_rejected():
     if "CODE_GENDER" in features_internes:
         p_bad_gender = {"features": features_internes.copy()}
         p_bad_gender["features"]["CODE_GENDER"] = 5
-        response = client.post("/predict2", json=p_bad_gender)
+        response = client.post("/predict", json=p_bad_gender)
         assert response.status_code == 400
         assert "CODE_GENDER must be 0 or 1" in response.json()["detail"]
 
@@ -112,7 +112,7 @@ def test_predict_business_rules_rejected():
     if "CNT_CHILDREN" in features_internes:
         p_bad_children = {"features": features_internes.copy()}
         p_bad_children["features"]["CNT_CHILDREN"] = -1
-        response = client.post("/predict2", json=p_bad_children)
+        response = client.post("/predict", json=p_bad_children)
         assert response.status_code == 400
         assert "CNT_CHILDREN must be a positive integer" in response.json()["detail"]
 
@@ -120,6 +120,6 @@ def test_predict_business_rules_rejected():
     if "AMT_INCOME_TOTAL" in features_internes:
         p_bad_income = {"features": features_internes.copy()}
         p_bad_income["features"]["AMT_INCOME_TOTAL"] = -5000
-        response = client.post("/predict2", json=p_bad_income)
+        response = client.post("/predict", json=p_bad_income)
         assert response.status_code == 400
         assert "AMT_INCOME_TOTAL must be positive" in response.json()["detail"]

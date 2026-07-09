@@ -50,7 +50,7 @@ pip install -r requirements.txt
 Créer un fichier `.env` à la racine :
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/oc_projet8
+DATABASE_URL=postgresql://neondb_owner....   #acces Neon/database
 API_ENV=local
 PYTHONPATH=.
 ```
@@ -82,7 +82,42 @@ Swagger : `http://127.0.0.1:8000/docs`
 ```
 
 ### `POST /predict`
-*à compléter selon les features du modèle scoring P6*
+ 
+Prend en entrée l'ensemble des features attendues par le modèle LightGBM (~700 features post-OHE, cf `model.feature_name_`).
+ 
+**Request body:**
+```json
+{
+  "features": {
+    "CODE_GENDER": 0,
+    "CNT_CHILDREN": 2,
+    "AMT_INCOME_TOTAL": 202500.0,
+    "FLAG_OWN_CAR": 1,
+    "...": "..."
+  }
+}
+```
+ 
+**Response (succès):**
+```json
+{
+  "prediction": 0,
+  "label": "Crédit accordé",
+  "probabilite_defaut": 0.1234
+}
+```
+ 
+**Validations appliquées:**
+- Toutes les features attendues par le modèle doivent être présentes (`422` sinon)
+- Valeurs uniquement numériques ou booléennes (`400` sinon)
+- Champs `FLAG_*` : doivent valoir 0 ou 1
+- `CODE_GENDER` : doit valoir 0 ou 1
+- `CNT_CHILDREN` : entier positif ou nul
+- `AMT_INCOME_TOTAL` : doit être positif
+**Logging:** chaque appel (succès ou erreur) est loggué en base PostgreSQL (Neon) : features en entrée, prédiction/probabilité, latence, statut. Utilisé pour l'analyse de data drift (cf étape 3).
+ 
+### `GET /get_accord_sample` / `GET /get_refus_sample`
+Retourne un exemple de payload JSON prêt à l'emploi (crédit accordé / refusé) pour tester `/predict`.
 
 ---
 
@@ -154,3 +189,17 @@ Le pipeline se déclenche automatiquement à chaque `git push`. Vous pouvez cont
 | `git commit -m "mon message [skip ci]"` | **Ignorer le pipeline** : Pour les modifications mineures (documentation, typos). | Aucun (Pipeline bypassé) |
 
 _Note : Le déploiement s'appuie sur le secret de dépôt `HF_TOKEN` configuré sur GitHub._
+
+## Run local avec Docker
+
+Build the image:
+\`\`\`bash
+docker build -t p8-api .
+\`\`\`
+
+Run the container:
+\`\`\`bash
+docker run -p 7860:7860 p8-api
+\`\`\`
+
+API docs available at `http://127.0.0.1:7860/docs`
