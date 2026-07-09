@@ -29,7 +29,7 @@ jobs:
       - name: Lancement de la suite de tests (pytest)
         env:
           PYTHONPATH: .
-          DATABASE_URL: "popo"
+          DATABASE_URL: "sqlite:///:memory:"  # fake cause magicmock
           CI: "true"
         run: |
           pytest -v
