@@ -71,12 +71,13 @@ def _log_prediction(db: Session, payload: dict, start_time: float,
         )
         db.add(log_entry)
         db.commit()
-    except Exception:
+    except Exception as e:
+        print(f"[DB LOG FAILED] {e}")
         # Le logging ne doit jamais empêcher l'API de répondre
         db.rollback()
 
 @app.post("/predict")
-def predict2(request: PredictRequest, db: Session = Depends(get_db)):
+def predict(request: PredictRequest, db: Session = Depends(get_db)):
     start_time = time.perf_counter()
     payload = request.features
 

@@ -129,29 +129,30 @@ Retourne un exemple de payload JSON prêt à l'emploi (crédit accordé / refus�
 
 ## Base de données
 
-### Tables de logging
-| Table | Description |
-|---|---|
-| `prediction_inputs` | Features envoyées au modèle |
-| `prediction_outputs` | Score + statut + erreurs (FK → inputs) |
+### Tables de logging  (voir app/models_db.py)
+
+    __tablename__ = "prediction_logs"
+
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp       = Column(DateTime, default=datetime.utcnow)
+    source          = Column(String(20), nullable=True)   # "local", "HF_Prod", etc.
+    input_features  = Column(JSON)                         # blob complet des ~800 features
+    prediction      = Column(Integer, nullable=True)
+    probabilite     = Column(Float, nullable=True)
+    latence_ms      = Column(Float, nullable=True)
+    statut          = Column(String(10), default="success")
+    error_code      = Column(String(50), nullable=True)
+    error_message   = Column(String(255), nullable=True)
 
 ---
 
 ## Tests
 
 ```bash
-PYTHONPATH=. CI=true pytest tests/ -v --cov=app --cov-report=html
+PYTHONPATH=. 
+CI=true 
+pytest tests/ -v --cov=app --cov-report=html
 ```
-
----
-
-## CI/CD
-
-À chaque push sur `main` ou `feature/**` :
-1. **Test** — pytest + pytest-cov
-2. **Deploy** — push automatique vers Hugging Face Spaces  
-*inclure `[skip-deploy]` pour pusher sans déployer*
-
 ---
 
 ## Hugging Face Spaces

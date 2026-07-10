@@ -1,7 +1,7 @@
 """
 models_db.py — Modèle ORM SQLAlchemy (table de logging des prédictions).
 
-  - prediction_logs : une ligne par appel à /predict2, features stockées en JSON blob
+  - prediction_logs : une ligne par appel à /predict, features stockées en JSON blob
 """
 
 from datetime import datetime
