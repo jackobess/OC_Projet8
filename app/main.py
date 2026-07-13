@@ -3,7 +3,7 @@ import os
 
 from httpcore import request
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Header
 from pydantic import BaseModel
 from typing import Dict, Any
 from sqlalchemy.orm import Session
@@ -22,6 +22,11 @@ from app.__version__ import __version__
 
 load_dotenv()
 API_ENV = os.getenv("API_ENV", "not sure")
+API_KEY = os.getenv("API_KEY")
+
+def verify_api_key(x_api_key: str = Header(...)):
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Clé API invalide")
 
 # ── Chargement du modèle ──────────────────────────────────────────────────────
 MODEL_PATH = Path("models/home_credit_scoring_lgbm.joblib")
@@ -40,7 +45,8 @@ app = FastAPI(
     title="OC Projet 8 - Scoring Crédit API (API_ENV: " + API_ENV + ")",
     description="API de scoring crédit/ Home Credit (Projet n°8 - OpenClassrooms)",
     version=__version__,
-    lifespan=lifespan
+    lifespan=lifespan,
+    dependencies=[Depends(verify_api_key)]    
 )
 
 # ── Schéma Pydantic ───────────────────────────────────────────────────────────

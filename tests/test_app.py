@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.database import get_db
 
+
 def override_get_db():
     """Mock de la session BDD — ne se connecte pas à Postgres."""
     db = MagicMock()
@@ -16,6 +17,7 @@ app.dependency_overrides[get_db] = override_get_db
 
 # Initialisation du client de test FastAPI
 client = TestClient(app)
+client.headers.update({"x-api-key": "popo"})
 
 def test_health_check():
     """Vérifie que l'API est fonctionnelle au démarrage."""

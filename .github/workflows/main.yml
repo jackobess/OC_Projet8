@@ -31,6 +31,7 @@ jobs:
           PYTHONPATH: .
           DATABASE_URL: "sqlite:///:memory:"  # fake cause magicmock
           CI: "true"
+          API_KEY: "popo"  # Clé API pour les tests
         run: |
           pytest -v
 

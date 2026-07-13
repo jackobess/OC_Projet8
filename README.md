@@ -123,7 +123,9 @@ Retourne un exemple de payload JSON prêt à l'emploi (crédit accordé / refus�
 
 ## Monitoring & Data Drift
 
-*à compléter (Evidently / NannyML)*
+[Voir le rapport de drift html](docs/drift_report.html)  
+
+![Drift Report](docs/drift_report.jpg)
 
 ---
 
@@ -157,7 +159,11 @@ pytest tests/ -v --cov=app --cov-report=html
 
 ## Hugging Face Spaces
 
-*à compléter après déploiement*
+🔗 **API en production** : [https://jackobess-oc-projet8.hf.space](https://jackobess-oc-projet8.hf.space)
+
+📄 Documentation interactive (Swagger) : [https://jackobess-oc-projetslip.hf.space/docs](https://jackobess-oc-projet8.hf.space/docs)
+
+> ⚠️ L'accès à l'API nécessite une clé (`x-api-key` dans les headers). Contactez-moi pour obtenir une clé de test si besoin
 
 ---
 
