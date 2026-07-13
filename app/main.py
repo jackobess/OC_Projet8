@@ -12,6 +12,9 @@ import pandas as pd
 from pathlib import Path
 import json
 import time
+import cProfile
+import pstats
+import io
 
 from app.database import engine, Base, get_db
 from app.models_db import PredictionLog
@@ -124,8 +127,8 @@ def predict(request: PredictRequest, db: Session = Depends(get_db)):
                 detail="Validation Error: AMT_INCOME_TOTAL must be positive."
             )
 
-        # Création du DataFrame et conversion des types
-        df = pd.DataFrame([payload]).apply(pd.to_numeric, errors='coerce')
+        # Création du DataFrame
+        df = pd.DataFrame([payload])   #.apply(pd.to_numeric, errors='coerce')
 
         # /!\ SÉCURITÉ : Forcer l'ordre exact des colonnes attendu par le LightGBM
         df = df[EXPECTED_FEATURES]
@@ -153,6 +156,23 @@ def predict(request: PredictRequest, db: Session = Depends(get_db)):
                          error_code=type(e).__name__, error_message=str(e))
         raise HTTPException(status_code=500, detail=f"Erreur d'inférence: {str(e)}")
 
+
+if API_ENV == "local":      # ── Endpoint de profiling (LOCAL UNIQUEMENT) ──  Etape 4
+    @app.post("/predictcprof")
+    def predict_profiled(request: PredictRequest, db: Session = Depends(get_db)):
+        profiler = cProfile.Profile()
+        profiler.enable()
+
+        result = predict(request, db)
+
+        profiler.disable()
+
+        s = io.StringIO()
+        ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+        ps.print_stats(25)
+        profiler.dump_stats("predict_profile.prof")
+        return {"result": result, "profile": s.getvalue().replace(r"C:\Users\jacob", "...").splitlines()}
+
 @app.get("/get_accord_sample")
 def get_accord_sample():
     try:
@@ -168,3 +188,4 @@ def get_refus_sample():
             return json.load(f)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Fichier client_refus.json introuvable")
+    
