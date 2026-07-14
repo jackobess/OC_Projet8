@@ -123,9 +123,11 @@ Retourne un exemple de payload JSON prêt à l'emploi (crédit accordé / refus�
 
 ## Monitoring & Data Drift
 
-[Voir le rapport de drift html](docs/drift_report.html)  
-
 ![Drift Report](docs/drift_report.jpg)
+
+
+[Dernier apport Data Drift](https://jackobess-p8-driftreport.static.hf.space/index.html) 
+
 
 ---
 

@@ -43,10 +43,15 @@ async def lifespan(app: FastAPI):
 # ── App FastAPI ───────────────────────────────────────────────────────────────
 app = FastAPI(
     title="OC Projet 8 - Scoring Crédit API (API_ENV: " + API_ENV + ")",
-    description="API de scoring crédit/ Home Credit (Projet n°8 - OpenClassrooms)",
+    description="""
+API de scoring crédit/ Home Credit (Projet n°8 - OpenClassrooms)
+
+==> [Dernier rapport Data Drift](https://jackobess-p8-driftreport.static.hf.space/index.html)
+""",
     version=__version__,
     lifespan=lifespan,
-    dependencies=[Depends(verify_api_key)]    
+    # dependencies=[Depends(verify_api_key)]  # protection globale désactivée, appliquée route par route à la place
+
 )
 
 # ── Schéma Pydantic ───────────────────────────────────────────────────────────
@@ -86,7 +91,7 @@ def _log_prediction(db: Session, payload: dict, start_time: float,
         db.rollback()
 
 @app.post("/predict")
-def predict(request: PredictRequest, db: Session = Depends(get_db)):
+def predict(request: PredictRequest, db: Session = Depends(get_db), _=Depends(verify_api_key)):
     start_time = time.perf_counter()
     payload = request.features
 
@@ -165,7 +170,7 @@ def predict(request: PredictRequest, db: Session = Depends(get_db)):
 
 if API_ENV == "local":      # ── Endpoint de profiling (LOCAL UNIQUEMENT) ──  Etape 4
     @app.post("/predictcprof")
-    def predict_profiled(request: PredictRequest, db: Session = Depends(get_db)):
+    def predict_profiled(request: PredictRequest, db: Session = Depends(get_db), _ = Depends(verify_api_key)):
         profiler = cProfile.Profile()
         profiler.enable()
 
@@ -194,4 +199,44 @@ def get_refus_sample():
             return json.load(f)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Fichier client_refus.json introuvable")
-    
+
+@app.get("/metrics")
+def get_performance_metrics(db: Session = Depends(get_db)):
+    try:
+        # 1. Lecture des logs depuis la base de données via la session active (db)
+        # On utilise db.connection() pour que Pandas lise directement sur la même session
+        df_all = pd.read_sql(
+            "SELECT timestamp, statut, latence_ms, error_code FROM prediction_logs", 
+            db.connection()
+        )
+        
+        if df_all.empty:
+            return {
+                "message": "Aucun log disponible pour le moment.",
+                "taux_erreur": "0.0%",
+                "statistiques_latence_ms": {}
+            }
+
+        # 2. Calcul du taux d'erreur
+        taux_erreur_val = (df_all["statut"] == "error").mean()
+        
+        # 3. Statistiques de latence pour les succès
+        df_success = df_all.loc[df_all["statut"] == "success", "latence_ms"]
+        
+        if not df_success.empty:
+            # On convertit le describe() en dictionnaire propre
+            stats_latence = df_success.describe().to_dict()
+        else:
+            stats_latence = "Aucune prédiction réussie pour calculer la latence."
+
+        # 4. Retour du résultat
+        return {
+            "taux_erreur": f"{taux_erreur_val:.1%}",
+            "statistiques_latence_ms": stats_latence
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erreur lors de la récupération des métriques : {str(e)}"
+        )
