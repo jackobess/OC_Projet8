@@ -21,9 +21,8 @@ API de scoring crédit déployée sur Hugging Face Spaces, avec monitoring/data 
 | Modèle | LightGBM (P6 MLOps 1/2) |
 | BDD | PostgreSQL + SQLAlchemy |
 | BDD cloud | Neon (PostgreSQL serverless) |
-| Monitoring | Evidently AI / NannyML |
-| Dashboard | Streamlit |
-| Tests | Pytest + pytest-cov |
+| Monitoring/Dashboard | Evidently/datadrift report + API/metrics |
+| Tests | Pytest |
 | CI/CD | GitHub Actions |
 | Déploiement | Hugging Face Spaces (Docker) |
 
@@ -31,8 +30,8 @@ API de scoring crédit déployée sur Hugging Face Spaces, avec monitoring/data 
 
 ## Architecture
 
-*à compléter*
-
+![Architecture2](docs/archi2.jpg)
+[cf architecture P5](docs/archi.jpg)
 ---
 
 ## Installation
